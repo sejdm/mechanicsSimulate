@@ -355,14 +355,9 @@ noField _ = (0, 0)
 noPotential :: Potential
 noPotential _ = 0
 
+-- The following function is to solve a differential equation, without
+-- simulating. It is still experimental.
 solve :: NFData a => RealNumber -> RealNumber -> a -> (RealNumber -> a -> a) -> RealNumber -> a
 solve h it iy f t = helper it iy
     where helper t' y' | t' >= t = y'
                        | otherwise = t' `seq` y' `deepseq` helper (t' + h) (f h y')
-
-instance Functor Body where
-        fmap f x = x {object = f (object x)}
-
-instance Monad Body where
-        return x = Body {object = x, mass = 0, charge = 0, radius = 0, position = (0, 00), velocity = (0, 0), fixed = False, toPicture = Blank }
-        (>>=) = undefined
