@@ -16,6 +16,29 @@ import Graphics.Gloss.Data.ViewPort (ViewPort)
 
 
 
+-- If useEnhanced = False then the exactly stepsPerFrame steps will be
+-- performed per second and each step will be displayed as a frame. Use
+-- useEnhanced = False if you do not mind the number of frames being very
+-- large if you want a high accuracy..
+stepsPerSecond :: Int
+stepsPerSecond = 1000 -- Start with a small number first. For  my computer 12500 works fine but if the number is too high, it will be rendered jerky.
+
+useEnhanced :: Bool
+useEnhanced = False -- Setting this False usually results in a smoother one but then the frames per second are high.
+
+-- If useEnhanced = True, then exactly framesPerSecond frames will be
+-- displayed, but for each frame stepsPerFrame steps will be performed. Use
+-- useEnhanced = True  if you want the number of frames to be fixed but the
+-- accuracy to increase. 
+framesPerSecond :: Int -- Used only if useEnhanced = True
+framesPerSecond = 50
+
+stepsPerFrame :: Int -- Used only if useEnhanced = True
+stepsPerFrame =  1140
+
+
+
+
 
 
 type RealNumber = Float
@@ -178,10 +201,25 @@ simulateAllStep f g = glossify (transformAll f g)
 simulateAll :: Eq a =>  [Body a] -> (Body a -> Field) -> ExternalField -> IO ()
 simulateAll os f g = standardSimulate os positionPictures (simulateAllStep f g)
 
-standardSimulate :: a -> (a -> Picture) -> (ViewPort -> Float -> a -> a) -> IO ()
-standardSimulate = simulate (InWindow "Clock" (600, 600) (20, 20)) white 12500
+standardSimulate :: NFData a =>  a -> (a -> Picture) -> (ViewPort -> Float -> a -> a) -> IO ()
+standardSimulate = if useEnhanced then standardSimulateEnhanced else standardSimulateNormal
+
+standardSimulateNormal :: a -> (a -> Picture) -> (ViewPort -> Float -> a -> a) -> IO ()
+standardSimulateNormal = simulate (InWindow "Mechanics" (600, 600) (20, 20)) white stepsPerSecond
 
 
+-- This block is only for an enhanced simulation
+standardSimulateEnhanced :: NFData a =>  a -> (a -> Picture) -> (ViewPort -> Float -> a -> a) -> IO ()
+standardSimulateEnhanced x f g = standardSimulate' x f (enhance stepsPerFrame g)
+    where standardSimulate' = simulate (InWindow "Mechanics" (600, 600) (20, 20)) white framesPerSecond
+
+last' :: NFData a => [a] -> a
+last' [x] = x
+last' (x:xs) = x `deepseq` last xs
+
+enhance :: NFData a => Int -> (ViewPort -> Float -> a -> a) -> ViewPort -> Float -> a -> a
+enhance n f v t i = last' $ take n $ iterate (f v (t/fromIntegral n)) i
+-- End of endhanced simulation block
 
 
 
