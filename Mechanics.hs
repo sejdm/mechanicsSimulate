@@ -1,6 +1,6 @@
 module Mechanics (RealNumber, Time, Vector2D, Position, Velocity, Acceleration, Force, Momentum, Mass, Charge, State, Field, noField, noPotential,
                  Body (..), simulateAll,
-                 Newtonian (..),
+                 Physical (..),
                  System (..), simulateN, 
                  SystemP (..), simulateNP, 
                  massToRadius,
@@ -235,7 +235,7 @@ radiusToMass r = r^(2 :: Int)/10
 
 
 
-class Newtonian a where
+class Physical a where
         imass :: a -> Mass
         imass = radiusToMass . iradius
 
@@ -264,7 +264,7 @@ class Newtonian a where
         ipicture x = color (icolour x) $ circleSolid (iradius x)
 
 
-setValues :: Newtonian a => a -> Body a
+setValues :: Physical a => a -> Body a
 setValues x = Body {
                     object = x,
                     mass = imass x, 
@@ -277,11 +277,11 @@ setValues x = Body {
                     }
 
 
-simulateNewton :: (Eq a, Newtonian a) => [a] -> (Body a -> Field) -> ExternalField -> IO ()
+simulateNewton :: (Eq a, Physical a) => [a] -> (Body a -> Field) -> ExternalField -> IO ()
 simulateNewton xs = simulateAll (map setValues xs)
 
 
-simulateNewtonPotential :: (Eq a, Newtonian a) => [a] -> (Body a -> Potential) -> ExternalPotential -> IO ()
+simulateNewtonPotential :: (Eq a, Physical a) => [a] -> (Body a -> Potential) -> ExternalPotential -> IO ()
 simulateNewtonPotential xs f g = simulateNewton xs (potentialToField . f) (potentialToField g)
 
 
@@ -293,13 +293,13 @@ simulateNewtonPotential xs f g = simulateNewton xs (potentialToField . f) (poten
 
 data System a = System { objects :: [a], internal :: Body a -> Field , external :: ExternalField }
 
-simulateN :: (Newtonian a, Eq a) => System a -> IO ()
+simulateN :: (Physical a, Eq a) => System a -> IO ()
 simulateN x = simulateNewton (objects x) (internal x) (external x) 
 
 
 data SystemP a = SystemP { objectsP :: [a], internalP :: Body a -> Potential , externalP :: ExternalPotential }
 
-simulateNP :: (Newtonian a, Eq a) => SystemP a -> IO ()
+simulateNP :: (Physical a, Eq a) => SystemP a -> IO ()
 simulateNP x = simulateNewtonPotential  (objectsP x) (internalP x) (externalP x) 
 
 
