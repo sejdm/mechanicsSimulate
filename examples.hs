@@ -5,7 +5,7 @@ import Graphics.Gloss
 -- Solar System
 data Solar = Sun | Earth | Moon deriving (Eq, Show)
 
-instance Newtonian Solar where
+instance Physical Solar where
         imass Sun   = 14000
         imass Earth = 10
         imass Moon  = 1
@@ -38,7 +38,7 @@ solarSystem = System {
 -- Centripetal
 data Sling = Pivot | Ball deriving (Eq)
 
-instance Newtonian Sling where
+instance Physical Sling where
         ifixed Pivot = True
         ifixed _ = False
 
@@ -58,7 +58,7 @@ centripetalSystem = System {
 --- Simple Harmonic
 data Spring = Centre | Weight deriving (Eq)
 
-instance Newtonian Spring where
+instance Physical Spring where
         ifixed Centre = True
         ifixed _ = False
 
@@ -82,7 +82,7 @@ simpleHarmonicSystem = System {
 -- Elastic Collision
 data Balls = Ball1 | Ball2 deriving (Eq)
 
-instance Newtonian Balls where
+instance Physical Balls where
         iposition Ball1 = (-100, 0)
         iposition Ball2 = (500, 0)
 
